@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import userModel from '../models/userModel.js';
+import transporter from '../config/nodemailer.js';
 
 export const register = async (req,res)=>{
     const {name, email, password} = req.body;
@@ -23,7 +24,7 @@ export const register = async (req,res)=>{
 
         await user.save();
 
-        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIN: '7d'});
+        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '7d'});
 
         res.cookie('token', token, {
             httpOnly: true,
@@ -31,6 +32,16 @@ export const register = async (req,res)=>{
             sameSite: process.env.NODE_ENV == 'production' ? 'none' : 'strict',
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
+
+        //sending welcome email
+        const mailOption = {
+            from: process.env.SENDER_EMAIL,
+            to: email,
+            subject: 'Welcome to IDK',
+            text: `Welcome to IDK website. I guess your account has beem created with email id: ${email}`
+        };
+
+        await transporter.sendMail(mailOption);
 
         return res.json({success: true});
 
@@ -57,7 +68,7 @@ export const login = async (req,res) =>{
             return res.json({success:false, message: 'invaild password'})
         }
 
-        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIN: '7d'});
+        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '7d'});
 
         res.cookie('token', token, {
             httpOnly: true,

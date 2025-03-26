@@ -39,7 +39,7 @@ export const register = async (req,res)=>{
             to: email,
             subject: 'Welcome to IDK',
             text: `Welcome to IDK website. I guess your account has beem created with email id: ${email}`
-        };
+        }; 
 
         await transporter.sendMail(mailOption);
 
